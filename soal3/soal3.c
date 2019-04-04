@@ -7,9 +7,9 @@
 #include <sys/wait.h>
 #include <unistd.h>
 #include <string.h>
-
+#include <signal.h>
 #define FOR(i, k) for(int i=0; i<k; i++)
-#define T 2
+#define T 3
 pthread_t tid[T];
 int WU_stats=0;
 int S_stats=100;
@@ -17,6 +17,9 @@ int S_stats=100;
 
 int flag1=0;
 int flag2=0;
+int flagdone=0;
+
+int inp=99;
 
 void menu0()
 {
@@ -26,141 +29,113 @@ void menu0()
 void menu1()
 {
 	WU_stats=WU_stats+15;
+	flag1++;
 }
 
 void menu2()
 {
 	S_stats=S_stats-10;
-}
-
-void update_flag1()
-{
-	flag1++;
-}
-
-void update_flag2()
-{
 	flag2++;
+}
+
+void input()
+{
+		if(WU_stats>=100)
+			{
+				printf("Agmal Terbangun,mereka bangun pagi dan berolahraga\n");
+				flagdone=1;
+				kill(0,SIGKILL);
+							
+			}
+		else if (S_stats <=0)
+			{
+				printf("Iraj ikut tidur, dan bangun kesiangan bersama Agmal\n");
+				flagdone=1;
+			
+			}
+		else
+			{
+				printf("Masukkan input\n0=All Status\n1=Agmal Ayo Bangun\n2=Iraj Ayo Tidur\n");
+				scanf("%d",&inp);
+				if(inp==0)
+				{
+					menu0();
+					inp=99;
+				}
+			}
+}
+
+void *jalaninput(void *arg)
+{
+	while(1)
+	{
+		input();
+	}
+	
 }
 
 void *jalanmenu1(void *arg)
 {
-	pthread_t id=pthread_self();
-        if(pthread_equal(id,tid[0]))
-        {
-        	if(flag2==3)
-    		{
-			flag1=0;
-    			sleep(10);
-			
-    		}
-    		else
-    		{
-    			update_flag1();
-				printf("flag1=%d\n",flag1);  			
-    		}
-        }
-        else if(pthread_equal(id,tid[1])) // thread menampilkan gambar
-        {
-        	if (flag2==3)
-        	{
-        		printf("Fitur Iraj Ayo Tidur disabled 10 s\n");
-        		sleep(10);
-        	}
-        	else
-        	{
-				printf("masuk menu1\n");
-                menu1();
-        	}
-        }
+	while(1)
+	{
+		if(flagdone==1)
+		{
+			printf("menu1kill\n");
+			kill(0,SIGKILL);
+		}
+		else if(flag2==3)
+		{
+			printf("Agmal Ayo Bangun disabled 10 s\n");				
+			flag2=0;
+			sleep(10);
+			continue;
+		}
+		else if(inp==1)
+		{
+				//printf("masuk menu 1 dong\n");
+				menu1();
+				inp=99;
+		}
+	}
 }
 
 void *jalanmenu2(void *arg)
 {
-	pthread_t id=pthread_self();
-        if(pthread_equal(id,tid[0]))
-        {
-        	if(flag1==3)
-    		{
-			flag1=0;
-    			sleep(10);
-    		}
-    		else
-    		{
-    			update_flag2();
-				printf("flag2=%d\n",flag2);
-    		}
-        }
-        else if(pthread_equal(id,tid[1])) // thread menampilkan gambar
-        {
-        	if (flag1==3)
-        	{
-        		printf("Agmal Ayo Bangun disabled 10 s\n");
-        		sleep(10);
-        	}
-        	else
-        	{
-                menu2();
-				printf("masuk menu 2\n");
-        	}
-        }
-}
-int main(void)
-{
-	char input[100];
-	char inpmenu0[100]="All Status";
-	char inpmenu1[100]="Agmal Ayo Bangun";
-	char inpmenu2[100]="Iraj Ayo Tidur";
-	flag1=0;
-	flag2=0;
-	int err;
-	//printf("%d-%d",WU_stats,S_stats);
 	while(1)
 	{
-		if(WU_stats>=100)
+		if(flagdone==1)
 		{
-			printf("Agmal Terbangun,mereka bangun pagi dan berolahraga\n");
-			break;
+			printf("menu2kill\n");
+			kill(0,SIGKILL);
 		}
-		else if (S_stats <=0)
-		{
-			printf("Iraj ikut tidur, dan bangun kesiangan bersama Agmal\n");
-			break;
-		}
-		printf("Masukkan input\n");
-		gets(input);
-		if(strcmp(input,inpmenu0)==0)
-		{
-			menu0();
-		}
-
-		else if(strcmp(input,inpmenu1)==0)
-		{
-			printf("masuk menu1\n");
-			FOR(i, T) 
-			{
-	 	    	err = pthread_create(&(tid[i]), NULL,&jalanmenu1, NULL);
-           	 }
-		pthread_join(tid[0],NULL);
-		pthread_join(tid[1],NULL);            
-        }
 		
-
-		else if(strcmp(input,inpmenu2)==0)
+		else if(flag1==3)
 		{
-			printf("masuk menu2\n");
-			FOR(i, T) 
-			{
-	 	    	err = pthread_create(&(tid[i]), NULL,&jalanmenu2, NULL);
-            	}
-        	pthread_join(tid[0],NULL);
-			pthread_join(tid[1],NULL);
+				printf("Fitur Iraj Ayo Tidur disabled 10 s\n");
+				flag1=0;
+				sleep(10);
+				continue;
 		}
-		else
+		else if(inp==2)
 		{
-			printf("input salah\n");
-		}
 
+				//printf("masuk menu 2 dong\n");
+				menu2();
+				inp=99;
+			
+		}
 	}
+}
 
+
+
+int main(void)
+{
+	pthread_create(&(tid[1]), NULL,&jalanmenu1, NULL);
+	pthread_create(&(tid[2]), NULL,&jalanmenu2, NULL);
+	pthread_create(&(tid[0]), NULL,&jalaninput, NULL);
+	pthread_join(tid[1],NULL);
+	pthread_join(tid[2],NULL);
+	pthread_join(tid[0],NULL);
+		  
 }

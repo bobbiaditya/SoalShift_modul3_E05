@@ -74,7 +74,7 @@ int main(int argc, char *argv[])
 	for(i=0;i<jumlah;i++)
 	{
 		//temp[i]=atoi(argv[i]);
-		printf("%d\t",temp[i]);
+		//printf("%d\t",temp[i]);
 	}    
 FOR(i, jumlah) 
     {
@@ -92,11 +92,11 @@ FOR(i, jumlah)
     {
 		pthread_join(tid[i],NULL);
     }
-    exit(0);
+    bubbleSort(temp,jumlah);
     bubbleSort(hasil,jumlah);
     for(int i=1;i<jumlah;i++)
     {
-    	printf("%d!=%d",i,hasil);
+    	printf("%d!=%d\n",temp[i],hasil[i]);
     }
 
     return 0;

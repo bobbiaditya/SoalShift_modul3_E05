@@ -73,7 +73,7 @@ void *jalaninput(void *arg)
 		if(!status || statusagmal || statusiraj)
 		{
 			sleep(1);
-			printf("%d-%d-%d\n",status,statusagmal,statusiraj);
+			//printf("%d-%d-%d\n",status,statusagmal,statusiraj);
 			status=1;
 			input();
 

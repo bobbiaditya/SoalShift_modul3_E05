@@ -18,9 +18,10 @@ int S_stats=100;
 int flag1=0;
 int flag2=0;
 int flagdone=0;
-
+int status=0;
 int inp=99;
-
+int statusagmal=0;
+int statusiraj=0;
 void menu0()
 {
 	printf("Agmal WakeUp_Status = %d\nIraj Spirit_Status = %d\n",WU_stats,S_stats);
@@ -43,14 +44,13 @@ void input()
 		if(WU_stats>=100)
 			{
 				printf("Agmal Terbangun,mereka bangun pagi dan berolahraga\n");
-				flagdone=1;
 				kill(0,SIGKILL);
 							
 			}
 		else if (S_stats <=0)
 			{
 				printf("Iraj ikut tidur, dan bangun kesiangan bersama Agmal\n");
-				flagdone=1;
+				kill(0,SIGKILL);
 			
 			}
 		else
@@ -61,6 +61,7 @@ void input()
 				{
 					menu0();
 					inp=99;
+					status=0;
 				}
 			}
 }
@@ -69,7 +70,15 @@ void *jalaninput(void *arg)
 {
 	while(1)
 	{
-		input();
+		if(!status || statusagmal || statusiraj)
+		{
+			sleep(1);
+			//printf("%d-%d-%d\n",status,statusagmal,statusiraj);
+			status=1;
+			input();
+
+		}
+
 	}
 	
 }
@@ -78,23 +87,24 @@ void *jalanmenu1(void *arg)
 {
 	while(1)
 	{
-		if(flagdone==1)
+		while(!statusagmal)
 		{
-			printf("menu1kill\n");
-			kill(0,SIGKILL);
-		}
-		else if(flag2==3)
-		{
-			printf("Agmal Ayo Bangun disabled 10 s\n");				
-			flag2=0;
-			sleep(10);
-			continue;
-		}
-		else if(inp==1)
-		{
-				//printf("masuk menu 1 dong\n");
-				menu1();
-				inp=99;
+			if(flag2==3)
+			{
+				printf("Agmal Ayo Bangun disabled 10 s\n");				
+				flag2=0;
+				status=0;
+				statusagmal=1;
+				sleep(10);
+				statusagmal=0;
+			}
+			else if(inp==1)
+			{
+					//printf("masuk menu 1 dong\n");
+					menu1();
+					inp=99;
+					status=0;
+			}
 		}
 	}
 }
@@ -103,27 +113,28 @@ void *jalanmenu2(void *arg)
 {
 	while(1)
 	{
-		if(flagdone==1)
+		while(!statusiraj)
 		{
-			printf("menu2kill\n");
-			kill(0,SIGKILL);
+			if(flag1==3)
+			{
+					printf("Fitur Iraj Ayo Tidur disabled 10 s\n");
+					flag1=0;
+					status=0;
+					statusiraj=1;
+					sleep(10);
+					statusiraj=0;
+			}
+			else if(inp==2)
+			{
+
+					//printf("masuk menu 2 dong\n");
+					menu2();
+					inp=99;
+					status=0;
+				
+			}
 		}
 		
-		else if(flag1==3)
-		{
-				printf("Fitur Iraj Ayo Tidur disabled 10 s\n");
-				flag1=0;
-				sleep(10);
-				continue;
-		}
-		else if(inp==2)
-		{
-
-				//printf("masuk menu 2 dong\n");
-				menu2();
-				inp=99;
-			
-		}
 	}
 }
 

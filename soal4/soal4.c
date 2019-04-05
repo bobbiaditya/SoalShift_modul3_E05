@@ -14,12 +14,12 @@ pthread_t tid[T];
 
 void bikin1()
 {
-	system("ps -aux|head -10 > $HOME/Documents/FolderProses1/SimpanProses1.txt");
+	system("ps -aux|head -11 | tail -10 > $HOME/Documents/FolderProses1/SimpanProses1.txt");
 }
 
 void bikin2()
 {
-	system("ps -aux|head -10 > $HOME/Documents/FolderProses2/SimpanProses2.txt");	
+	system("ps -aux|head -11 | tail -10 > $HOME/Documents/FolderProses2/SimpanProses2.txt");	
 }
 
 void zip1()

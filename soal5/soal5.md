@@ -302,3 +302,12 @@ int shop_restock(){
 ```
 
 Pada program di atas, hanya melakukan manipulasi shared memory, sedangkan untuk menginisialisasi shared memory sendiri, kami membuat fungsi bantuan lainnya (`soal5i.c`).
+
+### Tampilan Layar
+
+![soal5/soal5a.png](soal5/soal5a.png)
+![soal5/soal5b.png](soal5/soal5b.png)
+![soal5/soal5c.png](soal5/soal5c.png)
+![soal5/soal5d.png](soal5/soal5d.png)
+![soal5/soal5e.png](soal5/soal5e.png)
+![soal5/soal5f.png](soal5/soal5f.png)

@@ -1,10 +1,9 @@
-// KURANG NAMA
-
 #include <ncurses.h>
 #include <pthread.h>
-#include <signal.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
 #include <unistd.h>
 
 #define FOR(i, k) for(int i=0; i<k; i++)
@@ -13,6 +12,8 @@
 #define HEIGHT 24
 #define WIDTH 64
 
+key_t key = 4242;
+
 static int counter = 0;
 const int pos_start[2] = {0, 1};
 pthread_t tid[6] = {0};
@@ -20,12 +21,13 @@ WINDOW * win;
 WINDOW * status;
 int (*scene_current_status)();
 
-int shop_foodstock = 0;
+int *shop_foodstock = 0;
 int bath_c[2] = {1, 0};
 
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t mutex_b = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t mutex_sc = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t mutex_fsf = PTHREAD_MUTEX_INITIALIZER;
 
 struct monster {
     char name[50];
@@ -89,6 +91,11 @@ int init_window();
 
 int main()
 {   
+    // SHM
+    int shmid = shmget(key, sizeof(int), IPC_CREAT | 0666);
+    shop_foodstock = shmat(shmid, NULL, 0);  
+
+    // CURSES
     m_init(&mpp, 200, 100, 300);
 
     init_window();
@@ -209,6 +216,7 @@ int eat(){
     if(mpp.foodstock != 0){
         pthread_mutex_lock(&mutex);
         mpp.status[0] += 15;
+        mpp.status[0] = (mpp.status[0] > 200) ? 200 : mpp.status[0];
         pthread_mutex_unlock(&mutex);
         mpp.foodstock--;
     }
@@ -327,18 +335,17 @@ int scene_idle_menu(){
                      "2. TAKE A BATH",
                      "3. BATTLE SCENE", 
                      "4. SHOP SCENE (BUYER)", 
-                     "5. SHOP SCENE (MERCHANT)",
-                     "6. EXIT"};
+                     "5. EXIT"};
 
-    int (*routes[6]) () = {eat, bath, 
-                          scene_battle, scene_shop_buyer, 
-                          scene_shop_merchant, route_exit};
+    int (*routes[5]) () = {eat, bath, 
+                           scene_battle, scene_shop_buyer, 
+                           route_exit};
 
-    int (*statuses[6]) () = {scene_idle_status, scene_idle_status,
-                            scene_battle_status, scene_shop_buyer_status, 
-                            scene_shop_merchant_status, scene_idle_status};
+    int (*statuses[5]) () = {scene_idle_status, scene_idle_status,
+                             scene_battle_status, scene_shop_buyer_status, 
+                             scene_idle_status};
 
-    menu(menus, routes, statuses, 6);
+    menu(menus, routes, statuses, 5);
 }
 
 int scene_idle(){
@@ -397,22 +404,24 @@ int scene_battle(){
 }
 
 int shop_buy(){
-    if(shop_foodstock != 0){
-        shop_foodstock--;
+    if(*shop_foodstock != 0){
+        pthread_mutex_lock(&mutex_fsf);
+        *shop_foodstock -= 1;
+        pthread_mutex_unlock(&mutex_fsf);
         mpp.foodstock++;
     }
 
     scene_shop_buyer();
 }
 
-int shop_restock(){
-    shop_foodstock++;
+// int shop_restock(){
+//     *shop_foodstock++;
 
-    scene_shop_merchant();
-}
+//     scene_shop_merchant();
+// }
 
 int scene_shop_buyer_status(){
-    mvwprintw(win, 2, 4, "SHOP FOOD STOCK : %03d", shop_foodstock);
+    mvwprintw(win, 2, 4, "SHOP FOOD STOCK : %03d", *shop_foodstock);
     mvwprintw(win, 3, 4, "YOUR FOOD STOCK : %03d", mpp.foodstock);
 
     wrefresh(win);
@@ -441,33 +450,33 @@ int scene_shop_buyer(){
     return 0;
 }
 
-int scene_shop_merchant_status(){
-    mvwprintw(win, 2, 4, "SHOP FOOD STOCK : %03d", shop_foodstock);
+// int scene_shop_merchant_status(){
+//     mvwprintw(win, 2, 4, "SHOP FOOD STOCK : %03d", *shop_foodstock);
 
-    wrefresh(win);
-}
+//     wrefresh(win);
+// }
 
-int scene_shop_merchant_menu(){
-    char *menus[] = {"1. RESTOCK", 
-                     "2. BACK"};
+// int scene_shop_merchant_menu(){
+//     char *menus[] = {"1. RESTOCK", 
+//                      "2. BACK"};
 
-    int (*routes[]) () = {shop_restock, scene_idle};
+//     int (*routes[]) () = {shop_restock, scene_idle};
 
-    int (*statuses[]) () = {scene_shop_merchant_status, scene_idle_status};
+//     int (*statuses[]) () = {scene_shop_merchant_status, scene_idle_status};
 
-    menu(menus, routes, statuses, 2);
-}
+//     menu(menus, routes, statuses, 2);
+// }
 
-int scene_shop_merchant(){
-    scene_init("SHOP (MERCHANT)");
+// int scene_shop_merchant(){
+//     scene_init("SHOP (MERCHANT)");
 
-    scene_shop_merchant_status();
-    scene_shop_merchant_menu();
+//     scene_shop_merchant_status();
+//     scene_shop_merchant_menu();
 
-    wrefresh(win);
-    getch();
-    return 0;
-}
+//     wrefresh(win);
+//     getch();
+//     return 0;
+// }
 
 int scene_die_status(){
     clear_status();

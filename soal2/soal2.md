@@ -117,7 +117,11 @@ while(1){
 Kodingan di atas berguna untuk mengirimkan pesan string kepada server.Kemudian menerima pesan dari server dalam bentuk string dan mencetaknya ke user.
 
 ### Hasil
+
 Di bawah ini adalah hasil dari program server-penjual(kiri) dan client-penjual(kanan)
+
 ![Soal 2.1](/soal2/soal2_1.JPG)
+
 Di bawah ini adalah hasil dari program server-pembeli(kiri) dan client-pembeli(kanan)
-![Soal 2.2](/soal2/soal2_2.JPG)
+
+![Soal 2.2](/soal2/soal2_2.jpg)

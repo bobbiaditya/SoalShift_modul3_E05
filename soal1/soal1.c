@@ -21,7 +21,7 @@ int fakto(int n)
 	int hasil=1;
 	int i;
 
-	if(n==0) return 0;
+	if(n==0) return 1;
 	for(int i=1;i<=n;i++)
 	{
 		hasil=hasil*i;
